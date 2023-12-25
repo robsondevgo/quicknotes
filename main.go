@@ -5,14 +5,29 @@ import (
 	"net/http"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello"))
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Home Handler")
+}
+
+func olaHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Ola Handler")
 }
 
 func main() {
 	fmt.Println("Servidor rodando na porta 5000")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ola/", olaHandler)
+	mux.HandleFunc("/ola/mundo", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Olá, mundo Handler")
+	})
+	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Hello World Handler")
+	})
+	mux.HandleFunc("/", homeHandler)
 
-	// http.Handle("/hello", hello)
+	mux.HandleFunc("ola.pessoas.com/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Este é o meu site de olá")
+	})
 
-	http.ListenAndServe(":5000", http.HandlerFunc(helloHandler))
+	http.ListenAndServe(":5000", mux)
 }
