@@ -12,15 +12,16 @@ type TemplateData struct {
 }
 
 func main() {
-	t, err := template.ParseFiles("hello.html")
+	t, err := template.ParseFiles("b.html", "a.html")
 
-	fmt.Println(t.Name()) //hello.html
+	fmt.Println(t.Name())
+
+	fmt.Println(t.DefinedTemplates())
 
 	if err != nil {
 		panic(err)
 	}
-	data := TemplateData{Nome: "Robson"}
-	err = t.Execute(os.Stdout, data)
+	err = t.ExecuteTemplate(os.Stdout, "b", nil)
 	if err != nil {
 		panic(err)
 	}
