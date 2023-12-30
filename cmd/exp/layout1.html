@@ -1,0 +1,11 @@
+{{ template "header" }}
+{{ block "content" . }}
+<p>Este é o conteúdo default</p>
+{{end}}
+<!-- é o equivalente ao block
+{{ template "content" }}
+{{ define "content" }}
+<p>Este é o conteúdo default</p>
+{{ end }}
+-->
+{{ template "footer" . }}

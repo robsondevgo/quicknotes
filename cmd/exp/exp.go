@@ -12,7 +12,7 @@ type TemplateData struct {
 }
 
 func main() {
-	t, err := template.ParseFiles("b.html", "a.html")
+	t, err := template.ParseFiles("layout1.html", "footer.html", "header.html")
 
 	fmt.Println(t.Name())
 
@@ -21,7 +21,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = t.ExecuteTemplate(os.Stdout, "b", nil)
+	err = t.ExecuteTemplate(os.Stdout, "layout1.html", "2023")
 	if err != nil {
 		panic(err)
 	}
