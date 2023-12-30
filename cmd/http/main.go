@@ -21,13 +21,12 @@ func noteView(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Nota não encontrada", http.StatusNotFound)
 		return
 	}
-	note := `
-		<div>
-		  <h3>Esta é a nota %s</h3>
-		  <p>Este é o conteúdo da anotação</p>
-		</div>
-	`
-	fmt.Fprintf(w, note, id)
+	t, err := template.ParseFiles("views/templates/noteView.html")
+	if err != nil {
+		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, id)
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
