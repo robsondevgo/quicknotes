@@ -7,12 +7,16 @@ import (
 )
 
 func noteList(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("views/templates/home.html")
+	files := []string{
+		"views/templates/base.html",
+		"views/templates/pages/home.html",
+	}
+	t, err := template.ParseFiles(files...)
 	if err != nil {
 		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
 		return
 	}
-	t.Execute(w, nil)
+	t.ExecuteTemplate(w, "base", nil)
 }
 
 func noteView(w http.ResponseWriter, r *http.Request) {
@@ -21,12 +25,29 @@ func noteView(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Nota não encontrada", http.StatusNotFound)
 		return
 	}
-	t, err := template.ParseFiles("views/templates/noteView.html")
+	files := []string{
+		"views/templates/base.html",
+		"views/templates/pages/note-view.html",
+	}
+	t, err := template.ParseFiles(files...)
 	if err != nil {
 		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
 		return
 	}
-	t.Execute(w, id)
+	t.ExecuteTemplate(w, "base", id)
+}
+
+func noteNew(w http.ResponseWriter, r *http.Request) {
+	files := []string{
+		"views/templates/base.html",
+		"views/templates/pages/note-new.html",
+	}
+	t, err := template.ParseFiles(files...)
+	if err != nil {
+		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
+		return
+	}
+	t.ExecuteTemplate(w, "base", nil)
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +68,7 @@ func main() {
 
 	mux.HandleFunc("/", noteList)
 	mux.HandleFunc("/note/view", noteView)
+	mux.HandleFunc("/note/new", noteNew)
 	mux.HandleFunc("/note/create", noteCreate)
 
 	http.ListenAndServe(":5000", mux)
