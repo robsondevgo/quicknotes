@@ -1,4 +1,109 @@
-body {
-    /* font-family: 'Reenie Beanie', cursive; */
-    font-family: 'Roboto', sans-serif;
+@layer base {    
+    :root {
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-300: #d1d5db;
+        --gray-700: #4e4e4e;
+        --blue-50: #eff6ff;
+        
+        --black: #333333;
+        --white: white; 
+        
+        --ff-primary: 'Roboto', sans-serif;
+        --ff-secondary: 'Indie Flower', cursive;
+        --fw-light: 300;
+        --fw-normal: 400;
+        --fw-bold: 700;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        font-family: var(--ff-primary);
+    }
+
+    html, body {
+        height: 100%;            
+    }
+    
+    body {
+        background-color: var(--gray-100);
+        line-height: 1.5; 
+        position: relative;   
+    }
+    
+    a {
+        text-decoration: none;
+        color: var(--gray-700);
+    }
+
+    a:hover {
+        text-decoration: none;
+        color: var(--gray-800);
+    }
+
+    .wrapper {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding-inline: 1rem;
+    }
+}
+
+@layer header {
+    header {
+        text-align: center;
+    }
+
+    h1 a {
+        font-size: 5rem;
+        font-family: var(--ff-secondary);
+    }
+
+    nav {        
+        border-block: 1px solid var(--gray-300); 
+        background-color: var(--white);        
+        text-align: left;
+        font-weight: var(--fw-normal);        
+        text-transform: uppercase;
+        padding-block: 0.3rem;          
+    }
+
+    nav .wrapper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 1rem; 
+    }
+
+    nav .wrapper a {
+        padding: 0.7rem 1rem;
+        border-radius: 5px;
+        color: #60a5fa;
+        margin-left: -16px; /* pra alinhar o menu ao container */
+    }
+
+    nav .wrapper a:hover {
+        background-color: var(--blue-50);
+    }
+}
+
+@layer main {
+    main {
+        margin-top: 1.5rem;
+    }
+}
+
+@layer footer {
+    footer { 
+        width: 100%;
+        background-color: var(--white);
+        border-block: 1px solid var(--gray-300);
+        position: fixed;
+        bottom: 1rem;
+        text-align: center;
+        padding-block: 1rem;
+        font-style: italic;
+    }
 }

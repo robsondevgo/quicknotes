@@ -4,24 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='shortcut icon' href='/static/img/favicon.ico' type='image/x-icon'>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Roboto:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Reenie+Beanie&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <title>{{ template "title" . }} - Quicknotes</title>
 </head>
 <body>
     <header>
-        <div class="logo">Quicknotes</div>
+        <div class="wrapper">
+            <h1><a href="/">Quicknotes</a></h1>
+        </div>
         <nav>
-            <a href="/">Home</a>
+            <div class="wrapper">
+                <a href="/">Home</a>
+            </div>
         </nav>
     </header>
     <main>
-        {{ template "main" . }}
+        <div class="wrapper">
+            {{ template "main" . }}
+        </div>
     </main>
     <footer>
-        &copy;2023 por Robson Gomes. Todos os direitos reservados.
+        <div class="wrapper">
+            &copy;2023 por Robson Gomes. Todos os direitos reservados.
+        </div>
     </footer>
     <script src="/static/js/index.js"></script>
 </body>
