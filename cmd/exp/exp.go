@@ -2,19 +2,24 @@ package main
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/joho/godotenv"
+	"flag"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
+	var port string
+	var verbose bool
+	var valor int
+	flag.StringVar(&port, "port", "7000", "Server port")
+	flag.BoolVar(&verbose, "v", false, "Verbose mode")
+	flag.IntVar(&valor, "valor", 0, "some value")
+
+	flag.Parse()
+
+	if verbose {
+		fmt.Println("Server is running on port", port)
+		fmt.Println("Valor", valor)
+	} else {
+		fmt.Println(port)
 	}
-
-	port := os.Getenv("PORT")
-	host := os.Getenv("HOST")
-	fmt.Printf("%s:%s", host, port)
-
 }
