@@ -1,25 +1,38 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-
-	"flag"
+	"os"
 )
 
+type Config struct {
+	Server struct {
+		Port       int
+		Host       string
+		StaticDir  string
+		ServerPort string
+	}
+}
+
 func main() {
-	var port string
-	var verbose bool
-	var valor int
-	flag.StringVar(&port, "port", "7000", "Server port")
-	flag.BoolVar(&verbose, "v", false, "Verbose mode")
-	flag.IntVar(&valor, "valor", 0, "some value")
+	file, err := os.Open("config.json")
+	if err != nil {
+		panic(err)
+	}
+	var config Config
+	err = json.NewDecoder(file).Decode(&config)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Dir Static: %s\n %s%d\n",
+		config.Server.StaticDir,
+		config.Server.Host,
+		config.Server.Port)
 
-	flag.Parse()
-
-	if verbose {
-		fmt.Println("Server is running on port", port)
-		fmt.Println("Valor", valor)
-	} else {
-		fmt.Println(port)
+	//verificando se o valor começa com $,
+	//sendo tratado com variável de ambiente
+	if config.Server.ServerPort[0] == '$' {
+		fmt.Println(os.Getenv(config.Server.ServerPort[1:]))
 	}
 }
