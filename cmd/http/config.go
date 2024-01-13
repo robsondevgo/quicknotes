@@ -34,9 +34,15 @@ func (c Config) loadFromEnv() (conf Config) {
 		field := t.Field(i)
 		envTag := strings.Split(field.Tag.Get("env"), ",")
 		envName := envTag[0]
+		defaultValue := envTag[1]
 		value := os.Getenv(envName)
-		f := reflect.ValueOf(&conf).Elem().FieldByName(field.Name)
-		f.SetString(value)
+		if value == "" && defaultValue != "required" {
+			f := reflect.ValueOf(&conf).Elem().FieldByName(field.Name)
+			f.SetString(defaultValue)
+		} else {
+			f := reflect.ValueOf(&conf).Elem().FieldByName(field.Name)
+			f.SetString(value)
+		}
 	}
 	return
 }
