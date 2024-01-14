@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func noteList(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +22,7 @@ func noteList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
 		return
 	}
+	slog.Info("Executou o handler / ")
 	t.ExecuteTemplate(w, "base", nil)
 }
 
@@ -69,9 +72,11 @@ func noteCreate(w http.ResponseWriter, r *http.Request) {
 func main() {
 	config := loadConfig()
 
-	fmt.Println("DB_PASSWORD = ", config.DBPassword)
+	slog.SetDefault(newLogger(os.Stderr, config.GetLevelLog()))
 
-	fmt.Printf("Servidor rodando na porta %s\n", config.ServerPort)
+	slog.Info(fmt.Sprintf("DB_PASSWORD: %s", config.DBPassword))
+
+	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
 	mux := http.NewServeMux()
 
 	staticHandler := http.FileServer(http.Dir("views/static/"))
