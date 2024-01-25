@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
+
+	"github.com/robsondevgo/quicknotes/internal/apperror"
 )
 
 type noteHandler struct{}
@@ -13,10 +16,9 @@ func NewNoteHandler() *noteHandler {
 	return &noteHandler{}
 }
 
-func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) {
+func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) error {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
+		return ErrNotFound
 	}
 	files := []string{
 		"views/templates/base.html",
@@ -24,18 +26,19 @@ func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles(files...)
 	if err != nil {
-		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
-		return
+		return ErrInternal
 	}
 	slog.Info("Executou o handler / ")
-	t.ExecuteTemplate(w, "base", nil)
+	return t.ExecuteTemplate(w, "base", nil)
 }
 
-func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) {
+func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
 	id := r.URL.Query().Get("id")
 	if id == "" {
-		http.Error(w, "Nota não encontrada", http.StatusNotFound)
-		return
+		return apperror.WithStatus(errors.New("anotação é obrigatória"), http.StatusBadRequest)
+	}
+	if id == "0" {
+		return apperror.WithStatus(errors.New("anotação 0 não foi encontrada"), http.StatusNotFound)
 	}
 	files := []string{
 		"views/templates/base.html",
@@ -43,33 +46,31 @@ func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles(files...)
 	if err != nil {
-		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
-		return
+		return ErrInternal
 	}
-	t.ExecuteTemplate(w, "base", id)
+	return t.ExecuteTemplate(w, "base", id)
 }
 
-func (nh *noteHandler) NoteNew(w http.ResponseWriter, r *http.Request) {
+func (nh *noteHandler) NoteNew(w http.ResponseWriter, r *http.Request) error {
 	files := []string{
 		"views/templates/base.html",
 		"views/templates/pages/note-new.html",
 	}
 	t, err := template.ParseFiles(files...)
 	if err != nil {
-		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
-		return
+		return ErrInternal
 	}
-	t.ExecuteTemplate(w, "base", nil)
+	return t.ExecuteTemplate(w, "base", nil)
 }
 
-func (nh *noteHandler) NoteCreate(w http.ResponseWriter, r *http.Request) {
+func (nh *noteHandler) NoteCreate(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
 
 		w.Header().Set("Allow", http.MethodPost)
 
 		//rejeitar a requisição
-		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
-		return
+		return apperror.WithStatus(errors.New("operação não permitida"), http.StatusMethodNotAllowed)
 	}
 	fmt.Fprint(w, "Criando uma nova nota...")
+	return nil
 }
