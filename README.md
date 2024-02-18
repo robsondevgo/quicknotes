@@ -24,9 +24,22 @@ type Config struct {
 
 ## Rotas da aplicação
 
-| Método | Rota         | Handler         | Descrição                              |
-|:-------|:-------------|:----------------|:---------------------------------------|
-| ALL    | /            | noteList        | Home Page                              |
-| ALL    | /note/view   | noteView        | Visualiza uma anotação                 |
-| ALL    | /note/new    | noteNew         | Form de Criação de uma anotação        |
-| POST   | /note/create | noteCreate      | Cria uma anotação                      |
+| Método | Rota         | Handler    | Descrição                       |
+|:-------|:-------------|:-----------|:--------------------------------|
+| ALL    | /            | noteList   | Home Page                       |
+| ALL    | /note/view   | noteView   | Visualiza uma anotação          |
+| ALL    | /note/new    | noteNew    | Form de Criação de uma anotação |
+| POST   | /note/create | noteCreate | Cria uma anotação               |
+
+## Modelo do Banco de Dados
+
+### NOTES
+
+| CAMPO      | TIPO      | CONSTRAINT   |
+|:-----------|:----------|:-------------|
+| ID         | BIGSERIAL | PK, NOT NULL |
+| TITLE      | TEXT      | NOT NULL     |
+| CONTENT    | TEXT      |              |
+| COLOR      | TEXT      | NOT NULL     |
+| CREATED_AT | TIMESTAMP |              |
+| UPDATED_AT | TIMESTAMP |              |
