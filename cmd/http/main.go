@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/robsondevgo/quicknotes/internal/handlers"
+	"github.com/robsondevgo/quicknotes/internal/repositories"
 )
 
 func main() {
@@ -32,6 +33,14 @@ func main() {
 	staticHandler := http.FileServer(http.Dir("views/static/"))
 
 	mux.Handle("/static/", http.StripPrefix("/static/", staticHandler))
+
+	noteRepo := repositories.NewNoteRepository(dbpool)
+
+	err = noteRepo.Delete(3)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	fmt.Println("Note 3 foi deletada")
 
 	noteHandler := handlers.NewNoteHandler()
 
