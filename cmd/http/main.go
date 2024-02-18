@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/robsondevgo/quicknotes/internal/handlers"
 )
 
@@ -13,6 +15,16 @@ func main() {
 	config := loadConfig()
 
 	slog.SetDefault(newLogger(os.Stderr, config.GetLevelLog()))
+
+	dbpool, err := pgxpool.New(context.Background(), config.DBConnURL)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
+	slog.Info("Conexão com o banco aconteceu com sucesso")
+
+	defer dbpool.Close()
 
 	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
 	mux := http.NewServeMux()
