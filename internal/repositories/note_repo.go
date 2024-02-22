@@ -32,7 +32,7 @@ func (nr *noteRepository) List() ([]models.Note, error) {
 	rows, err := nr.db.Query(context.Background(),
 		"select id, title, content, color, created_at, updated_at from notes")
 	if err != nil {
-		return list, err
+		return list, newRepositoryError(err)
 	}
 	defer rows.Close()
 
@@ -40,7 +40,7 @@ func (nr *noteRepository) List() ([]models.Note, error) {
 		var note models.Note
 		err = rows.Scan(&note.Id, &note.Title, &note.Content, &note.Color, &note.CreatedAt, &note.UpdatedAt)
 		if err != nil {
-			return list, err
+			return list, newRepositoryError(err)
 		}
 		list = append(list, note)
 	}
@@ -54,7 +54,7 @@ func (nr *noteRepository) GetById(id int) (*models.Note, error) {
 		`select id, title, content, color, created_at, updated_at 
 		from notes where id = $1`, id)
 	if err := row.Scan(&note.Id, &note.Title, &note.Content, &note.Color, &note.CreatedAt, &note.UpdatedAt); err != nil {
-		return &note, err
+		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
@@ -69,7 +69,7 @@ func (nr *noteRepository) Create(title, content, color string) (*models.Note, er
 			  RETURNING id, created_at`
 	row := nr.db.QueryRow(context.Background(), query, note.Title, note.Content, note.Color)
 	if err := row.Scan(&note.Id, &note.CreatedAt); err != nil {
-		return &note, err
+		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
@@ -90,7 +90,7 @@ func (nr *noteRepository) Update(id int, title, content, color string) (*models.
 	query := `UPDATE notes set title = $1, content = COALESCE($2, content), color = $3, updated_at = $4 where id = $5`
 	_, err := nr.db.Exec(context.Background(), query, note.Title, note.Content, note.Color, note.UpdatedAt, note.Id)
 	if err != nil {
-		return &note, err
+		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
@@ -98,7 +98,7 @@ func (nr *noteRepository) Update(id int, title, content, color string) (*models.
 func (nr *noteRepository) Delete(id int) error {
 	_, err := nr.db.Exec(context.Background(), "DELETE FROM notes WHERE id = $1", id)
 	if err != nil {
-		return err
+		return newRepositoryError(err)
 	}
 	return nil
 }
