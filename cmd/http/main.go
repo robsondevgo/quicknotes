@@ -36,13 +36,7 @@ func main() {
 
 	noteRepo := repositories.NewNoteRepository(dbpool)
 
-	err = noteRepo.Delete(3)
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	fmt.Println("Note 3 foi deletada")
-
-	noteHandler := handlers.NewNoteHandler()
+	noteHandler := handlers.NewNoteHandler(noteRepo)
 
 	mux.Handle("/", handlers.HandlerWithError(noteHandler.NoteList))
 	mux.Handle("/note/view", handlers.HandlerWithError(noteHandler.NoteView))
