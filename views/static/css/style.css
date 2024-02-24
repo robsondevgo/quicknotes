@@ -93,6 +93,52 @@
     main {
         margin-top: 1.5rem;
     }
+
+    .notes-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .note {        
+        border: 1px solid black;
+        border-radius: 5px;
+        padding-inline: 1rem;
+        width: 100%;
+        max-width: 230px;        
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .note .content {
+        min-height: 60px;
+    }
+
+    .note .title {
+        font-size: .90rem;
+        margin-bottom: 5px;
+        font-weight: var(--fw-bold);
+    }
+
+    .note .footer {
+        text-align: right;
+    }
+
+    .note .footer a {       
+        font-size: .90rem;        
+    }
+
+    /* faz o footer sumir e aparecer ao passar o mouse */
+    .hidden {
+        opacity: 0;
+    }
+
+    .note:hover .hidden {
+        opacity: 1;
+    }
+    /* fim */
 }
 
 @layer footer {

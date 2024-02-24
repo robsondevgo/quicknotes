@@ -1,6 +1,29 @@
 {{ define "title" }}Home Page{{end}}
 
 {{ define "main" }}
-<h1>Últimas anotações</h1>
-<p>Nenhuma anotação foi criada ainda! Que tal criar uma?</p>
+{{if eq (len .) 0}}
+    <h3>Nenhuma anotação foi criada ainda! Que tal criar uma?</h3>
+{{end}}
+
+<div class="notes-container">
+    {{range .}}
+        <div id="{{.Id}}" class="note">
+            <p class="title">{{.Title}}</p>
+            <div class="content">{{.Content}}</div>
+            <div class="footer">
+                <a href="#">Deletar</a>
+            </div>            
+        </div>
+    {{end}}
+</div>
+
 {{ end }}
+
+{{define "script"}}
+    <script>
+        $(".note").click(function(){
+            const id = $(this).attr('id')
+            window.location.href = "note/view?id=" + id
+        })
+    </script>
+{{end}}

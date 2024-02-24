@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
-	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -32,8 +32,11 @@ func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return ErrInternal
 	}
-	slog.Info("Executou o handler / ")
-	return t.ExecuteTemplate(w, "base", nil)
+	notes, err := nh.repo.List(r.Context())
+	if err != nil {
+		return err
+	}
+	return t.ExecuteTemplate(w, "base", newNoteResponseFromNoteList(notes))
 }
 
 func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
@@ -53,11 +56,17 @@ func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return ErrInternal
 	}
-	note, err := nh.repo.GetById(id)
+	note, err := nh.repo.GetById(r.Context(), id)
 	if err != nil {
 		return err
 	}
-	return t.ExecuteTemplate(w, "base", note)
+	buff := &bytes.Buffer{}
+	err = t.ExecuteTemplate(buff, "base", newNoteResponseFromNote(note))
+	if err != nil {
+		return ErrInternal
+	}
+	buff.WriteTo(w)
+	return nil
 }
 
 func (nh *noteHandler) NoteNew(w http.ResponseWriter, r *http.Request) error {
