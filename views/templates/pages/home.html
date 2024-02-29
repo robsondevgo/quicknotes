@@ -7,11 +7,11 @@
 
 <div class="notes-container">
     {{range .}}
-        <div id="{{.Id}}" class="note">
+        <div id="{{.Id}}" class="note {{.Color}}">
             <p class="title">{{.Title}}</p>
             <div class="content">{{.Content}}</div>
             <div class="footer">
-                <a href="#">Deletar</a>
+                <a data-noteid="{{.Id}}" href="#">Deletar</a>
             </div>            
         </div>
     {{end}}
@@ -24,6 +24,19 @@
         $(".note").click(function(){
             const id = $(this).attr('id')
             window.location.href = "note/view?id=" + id
+        })
+
+        $(".note a").click(function(event) {
+            event.stopPropagation()
+            if (window.confirm("Tem certeza que deseja deletar essa anotação?")) {
+                $.ajax({
+                    url: "note/delete?id=" + $(this).data("noteid"),
+                    type: "DELETE",
+                    success: function() {
+                        window.location.href = "/"
+                    }
+                })
+            }
         })
     </script>
 {{end}}

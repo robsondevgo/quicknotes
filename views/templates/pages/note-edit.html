@@ -1,13 +1,16 @@
-{{ define "title" }}Nova anotação{{end}}
+{{ define "title" }}Atualizar anotação{{end}}
 
 {{ define "main" }}
-<h1>Nova anotação</h1>
+<h1>Atualizar anotação</h1>
 <form action="/note/save" method="post">
+    <input type="hidden" name="id" value="{{.Id}}">
     <label for="title">Título</label>
-    <input type="text" name="title" id="title">
+    <input type="text" name="title" id="title" value="{{.Title}}">
 
     <label for="content">Conteúdo</label>
-    <textarea name="content" id="content" cols="30" rows="10"></textarea>
+    <textarea name="content" id="content" cols="30" rows="10">
+        {{- .Content -}}
+    </textarea>
 
     <label for="color">Cor do Cartão</label>
     <input id="color" type="hidden" name="color" value="{{.Color}}">
