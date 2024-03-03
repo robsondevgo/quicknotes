@@ -23,14 +23,14 @@
     <script>
         $(".note").click(function(){
             const id = $(this).attr('id')
-            window.location.href = "note/view?id=" + id
+            window.location.href = "note/" + id
         })
 
         $(".note a").click(function(event) {
             event.stopPropagation()
             if (window.confirm("Tem certeza que deseja deletar essa anotação?")) {
                 $.ajax({
-                    url: "note/delete?id=" + $(this).data("noteid"),
+                    url: "note/" + $(this).data("noteid"),
                     type: "DELETE",
                     success: function() {
                         window.location.href = "/"

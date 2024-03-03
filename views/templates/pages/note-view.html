@@ -17,7 +17,7 @@
         event.stopPropagation()
         if (window.confirm("Tem certeza que deseja deletar essa anotação?")) {
             $.ajax({
-                url: "/note/delete?id=" + $(this).data("noteid"),
+                url: "/note/" + $(this).data("noteid"),
                 type: "DELETE",
                 success: function() {
                     window.location.href = "/"
@@ -27,7 +27,7 @@
     })
 
     $("button.info").click(function(event) {
-        window.location.href = "/note/edit?id=" + $(this).data("noteid")
+        window.location.href = "/note/" + $(this).data("noteid") + "/edit"
     })
 </script>
 {{end}}
