@@ -3,9 +3,16 @@
 {{ define "main" }}
 <h1>Atualizar anotação</h1>
 <form action="/note/save" method="post">
+    {{with .FieldErrors}}
+        <ul class="errors">
+        {{range .}}
+            <li>{{.}}</li>
+        {{end}}
+        </ul>
+    {{end}}
     <input type="hidden" name="id" value="{{.Id}}">
     <label for="title">Título</label>
-    <input type="text" name="title" id="title" value="{{.Title}}">
+    <input required type="text" name="title" id="title" value="{{.Title}}">
 
     <label for="content">Conteúdo</label>
     <textarea name="content" id="content" cols="30" rows="10">

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/robsondevgo/quicknotes/internal/models"
+	"github.com/robsondevgo/quicknotes/internal/validations"
 )
 
 type NoteResponse struct {
@@ -19,6 +20,7 @@ type NoteRequest struct {
 	Content string
 	Color   string
 	Colors  []string
+	validations.FormValidator
 }
 
 func newNoteRequest(note *models.Note) (req NoteRequest) {

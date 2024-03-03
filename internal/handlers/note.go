@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/robsondevgo/quicknotes/internal/apperror"
 	"github.com/robsondevgo/quicknotes/internal/models"
@@ -67,6 +68,25 @@ func (nh *noteHandler) NoteSave(w http.ResponseWriter, r *http.Request) error {
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 	color := r.PostForm.Get("color")
+
+	data := newNoteRequest(nil)
+	data.Id = id
+	data.Color = color
+	data.Content = content
+	data.Title = title
+
+	if strings.TrimSpace(content) == "" {
+		data.AddFieldError("content", "Conteúdo é obrigatório")
+	}
+
+	if !data.Valid() {
+		if id > 0 {
+			render(w, http.StatusUnprocessableEntity, "note-edit.html", data)
+		} else {
+			render(w, http.StatusUnprocessableEntity, "note-new.html", data)
+		}
+		return nil
+	}
 
 	var note *models.Note
 	if id > 0 {

@@ -2,12 +2,25 @@
 
 {{ define "main" }}
 <h1>Nova anotação</h1>
-<form action="/note/save" method="post">
+<form action="/note/save" method="post">    
+    {{with .FieldErrors}}
+        <ul class="errors">
+        {{range .}}
+            <li>{{.}}</li>
+        {{end}}
+        </ul>
+    {{end}}
     <label for="title">Título</label>
-    <input type="text" name="title" id="title">
+    <input required type="text" name="title" id="title" value="{{.Title}}">
 
     <label for="content">Conteúdo</label>
-    <textarea name="content" id="content" cols="30" rows="10"></textarea>
+    <!-- uma outra forma de exibir as mensagens de erro no formulário -->
+    <!-- {{with .FieldErrors.content}}
+        <label class="error">{{.}}</label>
+    {{end}} -->
+    <textarea name="content" id="content" cols="30" rows="10">
+        {{- .Content -}}
+    </textarea>
 
     <label for="color">Cor do Cartão</label>
     <input id="color" type="hidden" name="color" value="{{.Color}}">
