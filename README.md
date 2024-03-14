@@ -1,4 +1,4 @@
-# Desenvolvimento Web com Go - Do Zero do Deploy
+# Desenvolvimento Web com Go - Do Zero ao Deploy
 
 ## Quicknotes
 
@@ -24,12 +24,16 @@ type Config struct {
 
 ## Rotas da aplicação
 
-| Método | Rota         | Handler    | Descrição                       |
-|:-------|:-------------|:-----------|:--------------------------------|
-| ALL    | /            | noteList   | Home Page                       |
-| ALL    | /note/view   | noteView   | Visualiza uma anotação          |
-| ALL    | /note/new    | noteNew    | Form de Criação de uma anotação |
-| POST   | /note/create | noteCreate | Cria uma anotação               |
+| Método | Rota            | Handler    | Descrição                         |
+|:-------|:----------------|:-----------|:----------------------------------|
+| GET    | /               | NoteList   | Home Page                         |
+| GET    | /note/{id}      | NoteView   | Visualiza uma anotação            |
+| GET    | /note/new       | NoteNew    | Form de Criação de uma anotação   |
+| POST   | /note/save      | NoteSave   | Cria uma anotação                 |
+| DELETE | /note/{id}      | NoteEdit   | Remove uma anotação               |
+| GET    | /note/{id}/edit | NoteEdit   | Form de alteração de uma anotação |
+| GET    | /user/signup    | SignupForm | Form de registro de usuários      |
+| POST   | /user/signup    | Signup     | Adiciona o usuário no banco       |
 
 ## Modelo do Banco de Dados
 
@@ -43,3 +47,14 @@ type Config struct {
 | COLOR      | TEXT      | NOT NULL     |
 | CREATED_AT | TIMESTAMP |              |
 | UPDATED_AT | TIMESTAMP |              |
+
+### USERS
+
+| CAMPO      | TIPO      | CONSTRAINT             |
+|:-----------|:----------|:-----------------------|
+| ID         | BIGSERIAL | PK, NOT NULL           |
+| EMAIL      | TEXT      | NOT NULL UNIQUE        |
+| PASSWORD   | TEXT      | NOT NULL               |
+| ACTIVE     | TEXT      | NOT NULL DEFAULT false |
+| CREATED_AT | TIMESTAMP |                        |
+| UPDATED_AT | TIMESTAMP |                        |

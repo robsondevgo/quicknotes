@@ -35,8 +35,10 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", staticHandler))
 
 	noteRepo := repositories.NewNoteRepository(dbpool)
+	userRepo := repositories.NewUserRepository(dbpool)
 
 	noteHandler := handlers.NewNoteHandler(noteRepo)
+	userHandler := handlers.NewUserHandler(userRepo)
 
 	mux.Handle("/", handlers.HandlerWithError(noteHandler.NoteList))
 	mux.Handle("GET /note/{id}", handlers.HandlerWithError(noteHandler.NoteView))
@@ -44,6 +46,11 @@ func main() {
 	mux.Handle("POST /note", handlers.HandlerWithError(noteHandler.NoteSave))
 	mux.Handle("DELETE /note/{id}", handlers.HandlerWithError(noteHandler.NoteDelete))
 	mux.Handle("GET /note/{id}/edit", handlers.HandlerWithError(noteHandler.NoteEdit))
+
+	mux.Handle("GET /user/signup", handlers.HandlerWithError(userHandler.SignupForm))
+	mux.Handle("POST /user/signup", handlers.HandlerWithError(userHandler.Signup))
+
+	mux.Handle("GET /confirmation/{token}", handlers.HandlerWithError(userHandler.Confirm))
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), mux); err != nil {
 		panic(err)

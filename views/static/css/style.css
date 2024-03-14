@@ -93,10 +93,16 @@
         gap: 1rem; 
     }
 
+    nav .wrapper .right {
+        margin-left: auto;
+        display: flex;
+        gap: 1rem; 
+    }
+
     nav .wrapper a {
         padding: 0.7rem 1rem;
         border-radius: 5px;
-        color: #60a5fa;
+        color: var(--info);
         margin-left: -16px; /* pra alinhar o menu ao container */
     }
 
@@ -189,15 +195,21 @@
         display: block;
         font-size: .7rem;
     }
+
     form .errors {
         margin-block: 1rem;
     }
+
     form .errors > * {
         color: var(--danger);
         list-style-position: inside;
     }
     
-    input[type=text], select, textarea {
+    input[type=text], 
+    input[type=password], 
+    input[type=email], 
+    select, 
+    textarea {
         width: 100%;
         padding: 12px;
         border: 1px solid #ccc;
@@ -205,6 +217,11 @@
         margin-top: 6px;
         margin-bottom: 16px;
         resize: vertical;
+    }
+
+    input[type=checkbox] {
+        margin-right: 5px;
+        margin-bottom: 16px;
     }
 
     button {
@@ -217,6 +234,39 @@
         text-transform: uppercase;
         cursor: pointer;
         width: 150px;
+    }
+
+    .user-form {
+        max-width: 400px;
+        margin-inline: auto;
+    }
+
+    .user-form h1, h2 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .user-form button {
+        width: 100%;
+    }
+
+    .user-form p {
+        text-align: justify;
+        font-size: 1.15rem;
+        line-height: 1.8;
+    }
+
+    .user-form em {
+        display: inline-block;
+        padding-block: 1rem;
+        font-size: .85rem;
+        color: var(--neutral);
+        font-weight: var(--fw-bold);
+    }
+    
+    .user-form a {
+        color: var(--info);
+        font-weight: var(--fw-bold);
     }
 
     .success {
