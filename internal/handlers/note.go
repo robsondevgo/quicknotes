@@ -47,7 +47,14 @@ func (nh *noteHandler) NoteNew(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (nh *noteHandler) NoteSave(w http.ResponseWriter, r *http.Request) error {
-	err := r.ParseForm()
+	//verifica se o usuário possui o cookie de sessão
+	_, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/user/signin", http.StatusTemporaryRedirect)
+		return nil
+	}
+
+	err = r.ParseForm()
 	if err != nil {
 		return err
 	}
