@@ -10,6 +10,7 @@
         {{end}}
         </ul>
     {{end}}
+    {{csrfField}}
     <input type="hidden" name="id" value="{{.Id}}">
     <label for="title">Título</label>
     <input required type="text" name="title" id="title" value="{{.Title}}">

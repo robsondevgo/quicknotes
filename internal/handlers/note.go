@@ -26,7 +26,7 @@ func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return render(w, http.StatusOK, "home.html", newNoteResponseFromNoteList(notes))
+	return render(w, r, http.StatusOK, "home.html", newNoteResponseFromNoteList(notes))
 }
 
 func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
@@ -39,25 +39,26 @@ func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return render(w, http.StatusOK, "note-view.html", newNoteResponseFromNote(note))
+	return render(w, r, http.StatusOK, "note-view.html", newNoteResponseFromNote(note))
 }
 
 func (nh *noteHandler) NoteNew(w http.ResponseWriter, r *http.Request) error {
-	return render(w, http.StatusOK, "note-new.html", newNoteRequest(nil))
+	return render(w, r, http.StatusOK, "note-new.html", newNoteRequest(nil))
 }
 
 func (nh *noteHandler) NoteSave(w http.ResponseWriter, r *http.Request) error {
 	//verifica se o usuário possui o cookie de sessão
-	_, err := r.Cookie("session")
-	if err != nil {
-		http.Redirect(w, r, "/user/signin", http.StatusTemporaryRedirect)
-		return nil
-	}
+	// _, err := r.Cookie("session")
+	// if err != nil {
+	// 	http.Redirect(w, r, "/user/signin", http.StatusTemporaryRedirect)
+	// 	return nil
+	// }
 
-	err = r.ParseForm()
+	err := r.ParseForm()
 	if err != nil {
 		return err
 	}
+	fmt.Println(r.PostForm.Get("gorilla.csrf.Token"))
 	idParam := r.PostForm.Get("id")
 	id, _ := strconv.Atoi(idParam)
 	title := r.PostForm.Get("title")
@@ -76,9 +77,9 @@ func (nh *noteHandler) NoteSave(w http.ResponseWriter, r *http.Request) error {
 
 	if !data.Valid() {
 		if id > 0 {
-			render(w, http.StatusUnprocessableEntity, "note-edit.html", data)
+			render(w, r, http.StatusUnprocessableEntity, "note-edit.html", data)
 		} else {
-			render(w, http.StatusUnprocessableEntity, "note-new.html", data)
+			render(w, r, http.StatusUnprocessableEntity, "note-new.html", data)
 		}
 		return nil
 	}
@@ -119,5 +120,5 @@ func (nh *noteHandler) NoteEdit(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return render(w, http.StatusOK, "note-edit.html", newNoteRequest(note))
+	return render(w, r, http.StatusOK, "note-edit.html", newNoteRequest(note))
 }
