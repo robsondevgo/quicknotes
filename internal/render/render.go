@@ -1,14 +1,23 @@
-package handlers
+package render
 
 import (
 	"bytes"
 	"html/template"
 	"net/http"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/csrf"
 )
 
-func render(w http.ResponseWriter, r *http.Request, status int, page string, data any) error {
+type RenderTemplate struct {
+	session *scs.SessionManager
+}
+
+func NewRender(session *scs.SessionManager) *RenderTemplate {
+	return &RenderTemplate{session: session}
+}
+
+func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, status int, page string, data any) error {
 	files := []string{
 		"views/templates/base.html",
 	}
@@ -19,6 +28,9 @@ func render(w http.ResponseWriter, r *http.Request, status int, page string, dat
 		},
 		"csrfToken": func() string {
 			return csrf.Token(r)
+		},
+		"isAuthenticated": func() bool {
+			return rt.session.Exists(r.Context(), "userId")
 		},
 	})
 	t, err := t.ParseFiles(files...)

@@ -1,0 +1,45 @@
+{{ define "title" }}Home Page{{end}}
+
+{{ define "main" }}
+{{if eq (len .) 0}}
+    <h3>Nenhuma anotação foi criada ainda! Que tal criar uma?</h3>
+{{end}}
+
+<div class="notes-container">
+    {{range .}}
+        <div id="{{.Id}}" class="note {{.Color}}">
+            <p class="title">{{.Title}}</p>
+            <div class="content">{{.Content}}</div>
+            <div class="footer hidden">
+                <a data-noteid="{{.Id}}" href="#">Deletar</a>
+            </div>            
+        </div>
+    {{end}}
+</div>
+
+{{ end }}
+
+{{define "script"}}
+    <script>
+        $(".note").click(function(){
+            const id = $(this).attr('id')
+            window.location.href = "note/" + id
+        })
+
+        $(".note a").click(function(event) {
+            event.stopPropagation()
+            if (window.confirm("Tem certeza que deseja deletar essa anotação?")) {
+                $.ajax({
+                    url: "note/" + $(this).data("noteid"),
+                    type: "DELETE",
+                    headers: {
+                        "X-CSRF-Token": "{{csrfToken}}"
+                    },
+                    success: function() {
+                        window.location.href = "/note"
+                    }
+                })
+            }
+        })
+    </script>
+{{end}}

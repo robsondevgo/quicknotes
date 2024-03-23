@@ -18,11 +18,19 @@
         </div>
         <nav>
             <div class="wrapper">
-                <a href="/">Home</a>
+                {{if isAuthenticated}}
+                <a href="/note">Home</a>
                 <a href="/note/new">Adicionar Anotação</a>
+                {{else}}
+                    <a href="/">Home</a>
+                {{end}}
                 <div class="right">
-                    <a href="/user/signup">Cadastrar-se</a>
-                    <a href="/user/signin">Entrar</a>
+                    {{if isAuthenticated}}
+                        <a href="/user/signout">Sair</a>    
+                    {{else}}
+                        <a href="/user/signup">Cadastrar-se</a>
+                        <a href="/user/signin">Entrar</a>
+                    {{end}}
                 </div>
             </div>
         </nav>

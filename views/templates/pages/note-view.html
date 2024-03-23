@@ -20,10 +20,10 @@
                 url: "/note/" + $(this).data("noteid"),
                 type: "DELETE",
                 headers: {
-                    "X-CSRF-Token": {{csrfToken}}
+                    "X-CSRF-Token": "{{csrfToken}}"
                 },
                 success: function() {
-                    window.location.href = "/"
+                    window.location.href = "/note"
                 }
             })
         }
