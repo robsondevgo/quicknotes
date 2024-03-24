@@ -11,11 +11,11 @@ import (
 )
 
 type NoteRepository interface {
-	List(ctx context.Context) ([]models.Note, error)
-	GetById(ctx context.Context, id int) (*models.Note, error)
-	Create(ctx context.Context, title, content, color string) (*models.Note, error)
-	Update(ctx context.Context, id int, title, content, color string) (*models.Note, error)
-	Delete(ctx context.Context, id int) error
+	List(ctx context.Context, userId int) ([]models.Note, error)
+	GetById(ctx context.Context, userId int, id int) (*models.Note, error)
+	Create(ctx context.Context, userId int, title, content, color string) (*models.Note, error)
+	Update(ctx context.Context, userId int, id int, title, content, color string) (*models.Note, error)
+	Delete(ctx context.Context, userId int, id int) error
 }
 
 func NewNoteRepository(dbpool *pgxpool.Pool) NoteRepository {
@@ -26,11 +26,11 @@ type noteRepository struct {
 	db *pgxpool.Pool
 }
 
-func (nr *noteRepository) List(ctx context.Context) ([]models.Note, error) {
+func (nr *noteRepository) List(ctx context.Context, userId int) ([]models.Note, error) {
 	var list []models.Note
 
-	rows, err := nr.db.Query(ctx,
-		"select id, title, content, color, created_at, updated_at from notes")
+	query := "select id, title, content, color, created_at, updated_at from notes where user_id = $1"
+	rows, err := nr.db.Query(ctx, query, userId)
 	if err != nil {
 		return list, newRepositoryError(err)
 	}
@@ -48,33 +48,33 @@ func (nr *noteRepository) List(ctx context.Context) ([]models.Note, error) {
 	return list, nil
 }
 
-func (nr *noteRepository) GetById(ctx context.Context, id int) (*models.Note, error) {
+func (nr *noteRepository) GetById(ctx context.Context, userId int, id int) (*models.Note, error) {
 	var note models.Note
 	row := nr.db.QueryRow(ctx,
 		`select id, title, content, color, created_at, updated_at 
-		from notes where id = $1`, id)
+		from notes where id = $1 and user_id = $2`, id, userId)
 	if err := row.Scan(&note.Id, &note.Title, &note.Content, &note.Color, &note.CreatedAt, &note.UpdatedAt); err != nil {
 		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
 
-func (nr *noteRepository) Create(ctx context.Context, title, content, color string) (*models.Note, error) {
+func (nr *noteRepository) Create(ctx context.Context, userId int, title, content, color string) (*models.Note, error) {
 	var note models.Note
 	note.Title = pgtype.Text{String: title, Valid: true}
 	note.Content = pgtype.Text{String: content, Valid: true}
 	note.Color = pgtype.Text{String: color, Valid: true}
-	query := `INSERT INTO notes (title, content, color)
-			  VALUES ($1, $2, $3)
+	query := `INSERT INTO notes (title, content, color, user_id)
+			  VALUES ($1, $2, $3, $4)
 			  RETURNING id, created_at`
-	row := nr.db.QueryRow(ctx, query, note.Title, note.Content, note.Color)
+	row := nr.db.QueryRow(ctx, query, note.Title, note.Content, note.Color, userId)
 	if err := row.Scan(&note.Id, &note.CreatedAt); err != nil {
 		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
 
-func (nr *noteRepository) Update(ctx context.Context, id int, title, content, color string) (*models.Note, error) {
+func (nr *noteRepository) Update(ctx context.Context, userId int, id int, title, content, color string) (*models.Note, error) {
 	var note models.Note
 	note.Id = pgtype.Numeric{Int: big.NewInt(int64(id)), Valid: true}
 	if len(title) > 0 {
@@ -87,16 +87,19 @@ func (nr *noteRepository) Update(ctx context.Context, id int, title, content, co
 		note.Color = pgtype.Text{String: color, Valid: true}
 	}
 	note.UpdatedAt = pgtype.Date{Time: time.Now(), Valid: true}
-	query := `UPDATE notes set title = $1, content = COALESCE($2, content), color = $3, updated_at = $4 where id = $5`
-	_, err := nr.db.Exec(ctx, query, note.Title, note.Content, note.Color, note.UpdatedAt, note.Id)
+	query := `UPDATE notes set title = $1, content = COALESCE($2, content), color = $3, updated_at = $4 
+			  where id = $5 and user_id = $6`
+	_, err := nr.db.Exec(ctx, query,
+		note.Title, note.Content, note.Color,
+		note.UpdatedAt, note.Id, userId)
 	if err != nil {
 		return &note, newRepositoryError(err)
 	}
 	return &note, nil
 }
 
-func (nr *noteRepository) Delete(ctx context.Context, id int) error {
-	_, err := nr.db.Exec(ctx, "DELETE FROM notes WHERE id = $1", id)
+func (nr *noteRepository) Delete(ctx context.Context, userId int, id int) error {
+	_, err := nr.db.Exec(ctx, "DELETE FROM notes WHERE id = $1 and user_id = $2", id, userId)
 	if err != nil {
 		return newRepositoryError(err)
 	}

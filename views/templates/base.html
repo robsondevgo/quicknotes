@@ -25,8 +25,9 @@
                     <a href="/">Home</a>
                 {{end}}
                 <div class="right">
-                    {{if isAuthenticated}}
-                        <a href="/user/signout">Sair</a>    
+                    {{if isAuthenticated}}                        
+                        <a href="/user/signout">Sair</a>                        
+                        <span class="profile">{{userEmail}}</span>
                     {{else}}
                         <a href="/user/signup">Cadastrar-se</a>
                         <a href="/user/signin">Entrar</a>

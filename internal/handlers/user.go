@@ -82,6 +82,7 @@ func (uh *userHandler) Signin(w http.ResponseWriter, r *http.Request) error {
 
 	//armazena o id do usuário na sessão
 	uh.session.Put(r.Context(), "userId", user.Id.Int.Int64())
+	uh.session.Put(r.Context(), "userEmail", user.Email.String)
 
 	http.Redirect(w, r, "/note", http.StatusSeeOther)
 	return nil

@@ -88,8 +88,7 @@
 
     nav .wrapper {
         display: flex;
-        justify-content: flex-start;
-        align-items: center;
+        justify-content: flex-start;        
         gap: 1rem; 
     }
 
@@ -97,6 +96,15 @@
         margin-left: auto;
         display: flex;
         gap: 1rem; 
+    }
+
+    nav .wrapper .profile {
+        padding: 0.7rem 1rem;
+        font-size: .8rem;
+        line-height: 24px;        
+        color: var(--info);
+        margin-left: -24px;
+        font-style: italic;
     }
 
     nav .wrapper a {

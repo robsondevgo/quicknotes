@@ -32,6 +32,9 @@ func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, sta
 		"isAuthenticated": func() bool {
 			return rt.session.Exists(r.Context(), "userId")
 		},
+		"userEmail": func() string {
+			return rt.session.GetString(r.Context(), "userEmail")
+		},
 	})
 	t, err := t.ParseFiles(files...)
 	if err != nil {

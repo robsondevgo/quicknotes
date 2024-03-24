@@ -22,7 +22,7 @@ func LoadRoutes(sessionManager *scs.SessionManager, dbpool *pgxpool.Pool) http.H
 
 	render := render.NewRender(sessionManager)
 
-	noteHandler := handlers.NewNoteHandler(render, noteRepo)
+	noteHandler := handlers.NewNoteHandler(render, sessionManager, noteRepo)
 	userHandler := handlers.NewUserHandler(render, sessionManager, userRepo)
 
 	authMidd := handlers.NewAuthMiddleware(sessionManager)
