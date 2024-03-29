@@ -1,53 +1,95 @@
 package main
 
 import (
-	"crypto/md5"
-	"crypto/rand"
-	"crypto/sha512"
-	"encoding/base64"
 	"fmt"
+	"log"
+	"net/smtp"
 
-	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
 )
 
-// Alg Cost  Salt                  Hash
-//$2a$ 10   $aXk/TWeIt/2AUOD0c2Yls HKJxXykKg9U3LSLPeLqK.SgDjJK3gN2
-//$2a$ 10   $hZc2p5HKvjNfUuSGP9Qxv FF0cqcBUidl3nloLITI/2OJwQ4mrPTi
+var (
+	from       = "quicknotes@quick.com"
+	msg        = []byte("Seja bem vindo ao Quicknotes!")
+	recipients = []string{"user1@quick.com", "user2@quick.com"}
+)
 
 func main() {
-	// begin := time.Now()
-	// for range 2 {
-	// 	genBcrypt()
-	// }
-	// fmt.Println("Tempo:", time.Since(begin).Seconds())
-	fmt.Println(generateTokenKey())
-}
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", recipients...)
+	m.SetAddressHeader("Bcc", "dan@example.com", "Dan")
+	m.SetHeader("Subject", "Boas vindas")
+	m.SetBody("text/html", "<h1 style='color: green'>Seja bem vindo ao Quicknotes.</h1>!")
+	m.Attach("README.md")
 
-func genMD5() {
-	h := md5.New()
-	_, err := h.Write([]byte("123456"))
-	if err != nil {
+	d := gomail.NewDialer("localhost", 1025, "", "")
+	if err := d.DialAndSend(m); err != nil {
 		panic(err)
 	}
 }
 
-func genSHA() {
-	h := sha512.New()
-	_, err := h.Write([]byte("123456"))
+func sendMail() {
+	// Set up authentication information.
+	auth := smtp.PlainAuth("", "", "", "localhost")
+
+	// Connect to the server, authenticate, set the sender and recipient,
+	// and send the email all in one step.
+	to := []string{"user1@quick.com"}
+	msg := []byte("To: user1@quick.com\r\n" +
+		"Subject: Bem vindo!\r\n" +
+		"Content-Type: text/html\r\n" +
+		"\r\n" +
+		"<h1 style='color: red'>Seja bem vindo ao Quicknotes.</h1>\r\n")
+	err := smtp.SendMail("localhost:1025", auth, "quicknotes@quick.com", to, msg)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
-func genBcrypt() {
-	_, err := bcrypt.GenerateFromPassword([]byte("123546"), 20)
+func sendMailPlainAuth() {
+	// hostname is used by PlainAuth to validate the TLS certificate.
+	hostname := "localhost"
+	auth := smtp.PlainAuth("", "", "", hostname)
+
+	err := smtp.SendMail(hostname+":1025", auth, from, recipients, msg)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
-func generateTokenKey() string {
-	r := make([]byte, 32)
-	rand.Read(r)
-	return base64.URLEncoding.EncodeToString(r)
+func sendMailPackage() {
+	// Connect to the remote SMTP server.
+	c, err := smtp.Dial("localhost:1025")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Set the sender and recipient first
+	if err := c.Mail("quicknotes@quick.com"); err != nil {
+		log.Fatal(err)
+	}
+	if err := c.Rcpt("user1@quick.com"); err != nil {
+		log.Fatal(err)
+	}
+
+	// Send the email body.
+	wc, err := c.Data()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = fmt.Fprintf(wc, "Seja bem vindo ao Quicknotes")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = wc.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Send the QUIT command and close the connection.
+	err = c.Quit()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

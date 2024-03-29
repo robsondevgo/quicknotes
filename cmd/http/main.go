@@ -12,6 +12,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/robsondevgo/quicknotes/internal/mailer"
 )
 
 func main() {
@@ -30,6 +31,22 @@ func main() {
 	defer dbpool.Close()
 
 	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
+
+	//testar o envio de email
+	mailService := mailer.NewSMTPMailService(mailer.SMTPConfig{
+		Host:     "localhost",
+		Port:     1025,
+		Username: "",
+		Password: "",
+		From:     "quicknotes@quick.com",
+	})
+
+	mailService.Send(mailer.MailMessage{
+		To:      []string{"user1@quick.com"},
+		Subject: "Email de teste",
+		IsHtml:  true,
+		Body:    []byte("<h1>Esta é uma mensagem de teste</h1>"),
+	})
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = time.Hour
