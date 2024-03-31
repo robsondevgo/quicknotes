@@ -206,7 +206,7 @@
 
     form .errors {
         margin-block: 1rem;
-    }
+    }   
 
     form .errors > * {
         color: var(--danger);
@@ -244,6 +244,11 @@
         width: 150px;
     }
 
+    button:disabled {
+        background-color: var(--neutral);
+        cursor: inherit;
+    }
+
     .user-form {
         max-width: 400px;
         margin-inline: auto;
@@ -277,6 +282,19 @@
         font-weight: var(--fw-bold);
     }
 
+    p.success {
+        background-color: var(--success);
+        color: var(--gray-50);
+        text-align: center;
+        padding: 0.5rem 0.8rem;
+        margin-block: 1rem;
+    }
+
+    p.error {
+        color: var(--danger);       
+        margin-block: 1rem;
+    }
+
     .success {
         background-color: var(--success);
     }
@@ -295,7 +313,12 @@
 
     .danger {
         background-color: var(--danger);
-    }    
+    }
+
+    .space-between {
+        display: flex;
+        justify-content: space-between;
+    }
 }
 
 @layer color-picker {

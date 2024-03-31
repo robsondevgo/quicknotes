@@ -3,6 +3,9 @@
 {{ define "main" }}
 <form class="user-form" action="/user/signin" method="post">    
     <h1>Entrar no sistema</h1>
+    {{with .Flash}}
+        <p class="success">{{.}}</p>
+    {{end}}
     {{with .FieldErrors}}
         <ul class="errors">
         {{range .}}
@@ -20,13 +23,17 @@
     <input type="checkbox"><span>Mostrar senha</span>
 
     <button class="success" type="submit">Entrar</button>        
-
-    <p>Ainda não tem cadastro? <a href="/user/signup">Faça o seu cadastro!</a></p>
+    
+    <p class="space-between">
+        <a href="/user/signup">Cadastrar-se</a>
+        <a href="/user/forgetpassword">Esqueci minha senha</a>
+    </p>
 </form> 
 {{end}}
 
 {{define "script"}}
     <script>
+        $("p.success").fadeOut(2000)
         $(":checkbox").click(function(){
             if ($(this).is(":checked")) {
                 $("#password").attr("type", "text")

@@ -6,11 +6,12 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/robsondevgo/quicknotes/internal/handlers"
+	"github.com/robsondevgo/quicknotes/internal/mailer"
 	"github.com/robsondevgo/quicknotes/internal/render"
 	"github.com/robsondevgo/quicknotes/internal/repositories"
 )
 
-func LoadRoutes(sessionManager *scs.SessionManager, dbpool *pgxpool.Pool) http.Handler {
+func LoadRoutes(sessionManager *scs.SessionManager, mail mailer.MailService, dbpool *pgxpool.Pool) http.Handler {
 	mux := http.NewServeMux()
 
 	staticHandler := http.FileServer(http.Dir("views/static/"))
@@ -23,7 +24,7 @@ func LoadRoutes(sessionManager *scs.SessionManager, dbpool *pgxpool.Pool) http.H
 	render := render.NewRender(sessionManager)
 
 	noteHandler := handlers.NewNoteHandler(render, sessionManager, noteRepo)
-	userHandler := handlers.NewUserHandler(render, sessionManager, userRepo)
+	userHandler := handlers.NewUserHandler(render, sessionManager, mail, userRepo)
 
 	authMidd := handlers.NewAuthMiddleware(sessionManager)
 
@@ -43,6 +44,11 @@ func LoadRoutes(sessionManager *scs.SessionManager, dbpool *pgxpool.Pool) http.H
 	mux.Handle("POST /user/signin", handlers.HandlerWithError(userHandler.Signin))
 
 	mux.Handle("GET /user/signout", handlers.HandlerWithError(userHandler.Signout))
+
+	mux.Handle("GET /user/forgetpassword", handlers.HandlerWithError(userHandler.ForgetPasswordForm))
+	mux.Handle("POST /user/forgetpassword", handlers.HandlerWithError(userHandler.ForgetPassword))
+	mux.Handle("POST /user/password", handlers.HandlerWithError(userHandler.ResetPassword))
+	mux.Handle("GET /user/password/{token}", handlers.HandlerWithError(userHandler.ResetPasswordForm))
 
 	mux.Handle("GET /me", authMidd.RequireAuth(handlers.HandlerWithError(userHandler.Me)))
 

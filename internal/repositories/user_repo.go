@@ -12,11 +12,15 @@ import (
 )
 
 var ErrDuplicateEmail = newRepositoryError(errors.New("duplicate email"))
+var ErrEmailNotFound = newRepositoryError(errors.New("email not found"))
 var ErrInvalidTokenOrUserAlreadyConfirmed = newRepositoryError(errors.New("invalid token or user already confirmed"))
 
 type UserRepository interface {
 	Create(ctx context.Context, email, password, token string) (*models.User, string, error)
 	ConfirmUserByToken(ctx context.Context, token string) error
+	CreateResetPasswordToken(ctx context.Context, email, hashToken string) (string, error)
+	GetUserConfirmationByToken(ctx context.Context, token string) (*models.UserConfirmationToken, error)
+	UpdatePasswordByToken(ctx context.Context, newPassword, token string) (string, error)
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 }
 
@@ -26,6 +30,68 @@ type userRepository struct {
 
 func NewUserRepository(db *pgxpool.Pool) UserRepository {
 	return &userRepository{db: db}
+}
+
+func (ur *userRepository) GetUserConfirmationByToken(ctx context.Context, token string) (*models.UserConfirmationToken, error) {
+	var userToken models.UserConfirmationToken
+	query := `select id, user_id, token, confirmed, created_at, updated_at
+			  from users_confirmation_tokens
+			  where token = $1
+	`
+	row := ur.db.QueryRow(ctx, query, token)
+	if err := row.Scan(&userToken.Id, &userToken.UserId,
+		&userToken.Token, &userToken.Confirmed,
+		&userToken.CreatedAt, &userToken.UpdatedAt); err != nil {
+		return nil, newRepositoryError(err)
+	}
+	return &userToken, nil
+}
+
+func (ur *userRepository) CreateResetPasswordToken(ctx context.Context, email, hashToken string) (string, error) {
+	user, err := ur.FindByEmail(ctx, email)
+	if err != nil || !user.Active.Bool {
+		return "", ErrEmailNotFound
+	}
+
+	userToken, err := ur.createConfirmationToken(ctx, user, hashToken)
+	if err != nil {
+		return "", ErrEmailNotFound
+	}
+	return userToken.Token.String, nil
+}
+
+func (ur *userRepository) UpdatePasswordByToken(ctx context.Context, newPassword, token string) (string, error) {
+	//atualizar o user token
+	query := `SELECT u.id u_id, u.email, t.id t_id FROM users u INNER JOIN users_confirmation_tokens t
+			  ON u.id = t.user_id
+			  WHERE t.confirmed = false
+			  AND t.token = $1`
+	row := ur.db.QueryRow(ctx, query, token)
+	var userId, tokenId pgtype.Numeric
+	var email pgtype.Text
+	err := row.Scan(&userId, &email, &tokenId)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", ErrInvalidTokenOrUserAlreadyConfirmed
+		}
+		return "", newRepositoryError(err)
+	}
+
+	//atualiza o confirmation token
+	query = "UPDATE users_confirmation_tokens SET confirmed = true, updated_at = now() WHERE id = $1"
+	_, err = ur.db.Exec(ctx, query, tokenId)
+	if err != nil {
+		return "", newRepositoryError(err)
+	}
+
+	//atualiza a senha do usuário
+	query = "UPDATE users SET password = $1, updated_at = now() WHERE id = $2"
+	_, err = ur.db.Exec(ctx, query, newPassword, userId)
+	if err != nil {
+		return "", newRepositoryError(err)
+	}
+
+	return email.String, nil
 }
 
 func (ur *userRepository) Create(ctx context.Context, email, password, hashKey string) (*models.User, string, error) {

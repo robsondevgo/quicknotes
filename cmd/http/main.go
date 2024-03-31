@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/alexedwards/scs/pgxstore"
@@ -33,19 +34,13 @@ func main() {
 	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
 
 	//testar o envio de email
+	mailPort, _ := strconv.Atoi(config.MailPort)
 	mailService := mailer.NewSMTPMailService(mailer.SMTPConfig{
-		Host:     "localhost",
-		Port:     1025,
-		Username: "",
-		Password: "",
-		From:     "quicknotes@quick.com",
-	})
-
-	mailService.Send(mailer.MailMessage{
-		To:      []string{"user1@quick.com"},
-		Subject: "Email de teste",
-		IsHtml:  true,
-		Body:    []byte("<h1>Esta é uma mensagem de teste</h1>"),
+		Host:     config.MailHost,
+		Port:     mailPort,
+		Username: config.MailUsername,
+		Password: config.MailPassword,
+		From:     config.MailFrom,
 	})
 
 	sessionManager := scs.New()
@@ -56,7 +51,7 @@ func main() {
 
 	csrfMiddleware := csrf.Protect([]byte("32-byte-long-auth-key"))
 
-	mux := LoadRoutes(sessionManager, dbpool)
+	mux := LoadRoutes(sessionManager, mailService, dbpool)
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), sessionManager.LoadAndSave(csrfMiddleware(mux))); err != nil {
 		panic(err)
