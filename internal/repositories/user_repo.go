@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -53,10 +54,19 @@ func (ur *userRepository) CreateResetPasswordToken(ctx context.Context, email, h
 		return "", ErrEmailNotFound
 	}
 
-	userToken, err := ur.createConfirmationToken(ctx, user, hashToken)
+	tx, err := ur.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", newRepositoryError(err)
+	}
+	userToken, err := ur.createConfirmationToken(tx, ctx, user, hashToken)
 	if err != nil {
 		return "", ErrEmailNotFound
 	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return "", newRepositoryError(err)
+	}
+
 	return userToken.Token.String, nil
 }
 
@@ -77,18 +87,32 @@ func (ur *userRepository) UpdatePasswordByToken(ctx context.Context, newPassword
 		return "", newRepositoryError(err)
 	}
 
+	fail := func(err error) (string, error) {
+		slog.Error(err.Error())
+		return "", newRepositoryError(err)
+	}
+	tx, err := ur.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fail(err)
+	}
+	defer tx.Rollback(ctx)
+
 	//atualiza o confirmation token
 	query = "UPDATE users_confirmation_tokens SET confirmed = true, updated_at = now() WHERE id = $1"
-	_, err = ur.db.Exec(ctx, query, tokenId)
+	_, err = tx.Exec(ctx, query, tokenId)
 	if err != nil {
-		return "", newRepositoryError(err)
+		return fail(err)
 	}
 
 	//atualiza a senha do usuário
 	query = "UPDATE users SET password = $1, updated_at = now() WHERE id = $2"
-	_, err = ur.db.Exec(ctx, query, newPassword, userId)
+	_, err = tx.Exec(ctx, query, newPassword, userId)
 	if err != nil {
-		return "", newRepositoryError(err)
+		return fail(err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fail(err)
 	}
 
 	return email.String, nil
@@ -98,34 +122,52 @@ func (ur *userRepository) Create(ctx context.Context, email, password, hashKey s
 	var user models.User
 	user.Email = pgtype.Text{String: email, Valid: true}
 	user.Password = pgtype.Text{String: password, Valid: true}
-	query := `INSERT INTO users (email, password)
-			  VALUES ($1, $2)
-			  RETURNING id, created_at`
-	row := ur.db.QueryRow(ctx, query, user.Email, user.Password)
-	if err := row.Scan(&user.Id, &user.CreatedAt); err != nil {
-		if strings.Contains(err.Error(), "violates unique constraint") {
-			return &user, "", ErrDuplicateEmail
-		}
+
+	fail := func(err error) (*models.User, string, error) {
+		slog.Error(err.Error())
 		return &user, "", newRepositoryError(err)
 	}
 
-	//gerar o token confirmation
-	userToken, err := ur.createConfirmationToken(ctx, &user, hashKey)
+	tx, err := ur.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		return nil, "", err
+		return fail(err)
 	}
+	defer tx.Rollback(ctx)
+
+	query := `INSERT INTO users (email, password)
+			  VALUES ($1, $2)
+			  RETURNING id, created_at`
+	row := tx.QueryRow(ctx, query, user.Email, user.Password)
+	if err := row.Scan(&user.Id, &user.CreatedAt); err != nil {
+		if strings.Contains(err.Error(), "violates unique constraint") {
+			return fail(ErrDuplicateEmail)
+		}
+		return fail(err)
+	}
+
+	//gerar o token confirmation
+	userToken, err := ur.createConfirmationToken(tx, ctx, &user, hashKey)
+	if err != nil {
+		return fail(err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fail(err)
+	}
+
 	return &user, userToken.Token.String, nil
 }
 
-func (ur *userRepository) createConfirmationToken(ctx context.Context, user *models.User, token string) (*models.UserConfirmationToken, error) {
+func (ur *userRepository) createConfirmationToken(tx pgx.Tx, ctx context.Context, user *models.User, token string) (*models.UserConfirmationToken, error) {
 	var userToken models.UserConfirmationToken
 	userToken.Token = pgtype.Text{String: token, Valid: true}
 	userToken.UserId = user.Id
 	query := `INSERT INTO users_confirmation_tokens (user_id, token)
 			  VALUES ($1, $2)
 			  RETURNING id, created_at`
-	row := ur.db.QueryRow(ctx, query, userToken.UserId, userToken.Token)
+	row := tx.QueryRow(ctx, query, userToken.UserId, userToken.Token)
 	if err := row.Scan(&userToken.Id, &userToken.CreatedAt); err != nil {
+		tx.Rollback(ctx)
 		return nil, err
 	}
 	return &userToken, nil
@@ -147,18 +189,36 @@ func (ur *userRepository) ConfirmUserByToken(ctx context.Context, token string) 
 		}
 		return newRepositoryError(err)
 	}
+
+	//escopo de transação
+
+	fail := func(err error) error {
+		slog.Error(err.Error())
+		return newRepositoryError(err)
+	}
+
+	tx, err := ur.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fail(err)
+	}
+	defer tx.Rollback(ctx)
+
 	//tornar o usuário active
 	queryUpdUser := "UPDATE users SET active = true, updated_at = now() WHERE id = $1"
-	_, err = ur.db.Exec(ctx, queryUpdUser, userId)
+	_, err = tx.Exec(ctx, queryUpdUser, userId)
 	if err != nil {
-		return newRepositoryError(err)
+		return fail(err)
 	}
 
 	//tornar o token confirmed
 	queryUpdToken := "UPDATE users_confirmation_tokens SET confirmed = true, updated_at = now() WHERE id = $1"
-	_, err = ur.db.Exec(ctx, queryUpdToken, tokenId)
+	_, err = tx.Exec(ctx, queryUpdToken, tokenId)
 	if err != nil {
-		return newRepositoryError(err)
+		return fail(err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fail(err)
 	}
 
 	return nil
