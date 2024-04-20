@@ -49,11 +49,16 @@ func main() {
 	//Limpa as sessões expiradas da tabela de sessions a cada 30 minutos
 	pgxstore.NewWithCleanupInterval(dbpool, 30*time.Second)
 
-	csrfMiddleware := csrf.Protect([]byte("32-byte-long-auth-key"))
+	csrfMiddleware := csrf.Protect([]byte(config.CSRFKey))
 
 	mux := LoadRoutes(sessionManager, mailService, dbpool)
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), sessionManager.LoadAndSave(csrfMiddleware(mux))); err != nil {
 		panic(err)
 	}
+
+	// Configuração do TLS com certificados autoassinados
+	// if err := http.ListenAndServeTLS(fmt.Sprintf(":%s", config.ServerPort), "cer.cer", "cer.key", sessionManager.LoadAndSave(csrfMiddleware(mux))); err != nil {
+	// 	panic(err)
+	// }
 }

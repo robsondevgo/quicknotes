@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/smtp"
 
-	"gopkg.in/gomail.v2"
+	"github.com/robsondevgo/quicknotes/views"
 )
 
 var (
@@ -15,18 +15,12 @@ var (
 )
 
 func main() {
-	m := gomail.NewMessage()
-	m.SetHeader("From", from)
-	m.SetHeader("To", recipients...)
-	m.SetAddressHeader("Bcc", "dan@example.com", "Dan")
-	m.SetHeader("Subject", "Boas vindas")
-	m.SetBody("text/html", "<h1 style='color: green'>Seja bem vindo ao Quicknotes.</h1>!")
-	m.Attach("README.md")
-
-	d := gomail.NewDialer("localhost", 1025, "", "")
-	if err := d.DialAndSend(m); err != nil {
-		panic(err)
+	fs := views.Files
+	data, err := fs.ReadFile("static/js/index.js")
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println(string(data))
 }
 
 func sendMail() {

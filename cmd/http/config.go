@@ -11,14 +11,15 @@ import (
 )
 
 type Config struct {
-	ServerPort   string `env:"SERVER_PORT,5000"`
-	DBConnURL    string `env:"DB_CONN_URL,required"`
-	LevelLog     string `env:"LEVEL_LOG,info"`
-	MailHost     string `env:"MAIL_HOST,required"`
-	MailPort     string `env:"MAIL_PORT,required"`
-	MailUsername string `env:"MAIL_USERNAME,required"`
-	MailPassword string `env:"MAIL_PASSWORD,required"`
-	MailFrom     string `env:"MAIL_FROM,nao-responder@quick.com"`
+	ServerPort   string `env:"QNS_SERVER_PORT,5000"`
+	DBConnURL    string `env:"QNS_DB_CONN_URL,required"`
+	LevelLog     string `env:"QNS_LEVEL_LOG,info"`
+	MailHost     string `env:"QNS_MAIL_HOST,required"`
+	MailPort     string `env:"QNS_MAIL_PORT,required"`
+	MailUsername string `env:"QNS_MAIL_USERNAME,required"`
+	MailPassword string `env:"QNS_MAIL_PASSWORD,required"`
+	MailFrom     string `env:"QNS_MAIL_FROM,nao-responder@quick.com"`
+	CSRFKey      string `env:"QNS_CSRF_KEY,required"`
 }
 
 func (c Config) GetLevelLog() slog.Level {
