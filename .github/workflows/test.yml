@@ -1,0 +1,17 @@
+name: remote ssh command
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: comando ssh
+    runs-on: unbuntu-latest
+    steps:
+      - name: executar comando ssh no servidor remoto usando uma chave ssh
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}          
+          script: whoami
+        
+  
