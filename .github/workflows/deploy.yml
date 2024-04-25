@@ -1,0 +1,24 @@
+name: deploy-quicknotes
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Deploy to remote server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.REMOTE_SSH_KEY }}
+          ARGS: "-rlgoDzvc -i"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USERNAME }}
+          TARGET: "~/app"
+          SCRIPT_BEFORE: |
+            ls -al
+          SCRIPT_AFTER: |
+            ls -al
+            echo $RSYNC_STDOUT
