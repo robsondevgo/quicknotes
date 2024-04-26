@@ -1,0 +1,6 @@
+quicknotes.duckdns.org
+tls {
+	dns duckdns {$DUCK_DNS_TOKEN}
+}
+
+reverse_proxy server:5000

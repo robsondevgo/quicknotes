@@ -18,7 +18,17 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USERNAME }}
           TARGET: "~/app"
           SCRIPT_BEFORE: |
-            ls -al
+            rm -rf ~/app
           SCRIPT_AFTER: |
-            ls -al
-            echo $RSYNC_STDOUT
+            cd app
+            rm -f .env
+            echo "DB_PASSWORD=${{secrets.DB_PASSWORD}}" >> .env
+            echo "DB_USER=${{secrets.DB_USER}}" >> .env
+            echo "QNS_MAIL_FROM=${{secrets.QNS_MAIL_FROM}}" >> .env
+            echo "QNS_MAIL_HOST=${{secrets.QNS_MAIL_HOST}}" >> .env
+            echo "QNS_MAIL_PORT=${{secrets.QNS_MAIL_PORT}}" >> .env
+            echo "QNS_MAIL_USERNAME=${{secrets.QNS_MAIL_USERNAME}}" >> .env
+            echo "QNS_MAIL_PASSWORD=${{secrets.QNS_MAIL_PASSWORD}}" >> .env
+            echo "QNS_CSRF_KEY=${{secrets.QNS_CSRF_KEY}}" >> .env
+            docker compose stop
+            docker compose up -d --build &
