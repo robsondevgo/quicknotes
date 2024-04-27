@@ -1,6 +1,5 @@
 name: deploy-quicknotes
-on:
-  push:
+on: [push, workflow_dispatch]
 
 jobs:
   build:
