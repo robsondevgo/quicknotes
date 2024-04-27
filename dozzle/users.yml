@@ -1,0 +1,6 @@
+users:
+  # "admin" here is username
+  admin:
+    name: "Admin"
+    password: %{DOZZLE_PASSWORD}
+    email: dozzle@quicknotes.shop
