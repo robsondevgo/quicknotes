@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/alexedwards/scs/pgxstore"
@@ -34,14 +33,15 @@ func main() {
 	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
 
 	//testar o envio de email
-	mailPort, _ := strconv.Atoi(config.MailPort)
-	mailService := mailer.NewSMTPMailService(mailer.SMTPConfig{
-		Host:     config.MailHost,
-		Port:     mailPort,
-		Username: config.MailUsername,
-		Password: config.MailPassword,
-		From:     config.MailFrom,
-	})
+	// mailPort, _ := strconv.Atoi(config.MailPort)
+	// mailService := mailer.NewSMTPMailService(mailer.SMTPConfig{
+	// 	Host:     config.MailHost,
+	// 	Port:     mailPort,
+	// 	Username: config.MailUsername,
+	// 	Password: config.MailPassword,
+	// 	From:     config.MailFrom,
+	// })
+	mailService := mailer.NewConsoleMailService("robsondevgo@gmail.com")
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = time.Hour

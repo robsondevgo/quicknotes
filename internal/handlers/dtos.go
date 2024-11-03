@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 
 	"github.com/robsondevgo/quicknotes/internal/models"
 	"github.com/robsondevgo/quicknotes/internal/validations"
@@ -26,6 +27,15 @@ type NoteRequest struct {
 type UserRequest struct {
 	Email    string
 	Password string
+	validations.FormValidator
+}
+
+type UserSignupRequest struct {
+	Email          string
+	Password       string
+	CaptchaID      string
+	CaptchaContent template.URL
+	CaptchaAnswer  string
 	validations.FormValidator
 }
 

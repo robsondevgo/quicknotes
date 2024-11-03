@@ -140,7 +140,7 @@ func (ur *userRepository) Create(ctx context.Context, email, password, hashKey s
 	row := tx.QueryRow(ctx, query, user.Email, user.Password)
 	if err := row.Scan(&user.Id, &user.CreatedAt); err != nil {
 		if strings.Contains(err.Error(), "violates unique constraint") {
-			return fail(ErrDuplicateEmail)
+			return &user, "", ErrDuplicateEmail
 		}
 		return fail(err)
 	}

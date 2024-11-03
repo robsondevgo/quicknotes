@@ -1,16 +1,17 @@
 {{ define "title" }}Novo cadastro{{end}}
 
 {{ define "main" }}
-<form class="user-form" action="/user/signup" method="post">    
+<form class="user-form" action="/user/signup" method="post">
     <h1>Cadastrar-se</h1>
     {{with .FieldErrors}}
-        <ul class="errors">
+    <ul class="errors">
         {{range .}}
-            <li>{{.}}</li>
+        <li>{{.}}</li>
         {{end}}
-        </ul>
+    </ul>
     {{end}}
     {{csrfField}}
+    <input type="hidden" name="captchaID" value="{{.CaptchaID}}">
     <label for="email">E-mail</label>
     <input name="email" type="text" id="email">
 
@@ -19,20 +20,27 @@
 
     <input type="checkbox"><span>Mostrar senha</span>
 
-    <button class="success" type="submit">Cadastrar</button>        
+    <div>
+        <img src="{{.CaptchaContent}}">
+    </div>
+
+    <label for="answer">Resposta</label>
+    <input required autocomplete="off" name="answer" type="text" id="answer">
+
+    <button class="success" type="submit">Cadastrar</button>
 
     <p>Já é cadastrado? <a href="/user/signin">Faça o Login</a></p>
-</form> 
+</form>
 {{end}}
 
 {{define "script"}}
-    <script>
-        $(":checkbox").click(function(){
-            if ($(this).is(":checked")) {
-                $("#password").attr("type", "text")
-            } else {
-                $("#password").attr("type", "password")
-            }
-        })
-    </script>
+<script>
+    $(":checkbox").click(function () {
+        if ($(this).is(":checked")) {
+            $("#password").attr("type", "text")
+        } else {
+            $("#password").attr("type", "password")
+        }
+    })
+</script>
 {{end}}

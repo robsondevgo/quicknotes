@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"regexp"
@@ -199,7 +200,15 @@ func (uh *userHandler) Signin(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (uh *userHandler) SignupForm(w http.ResponseWriter, r *http.Request) error {
-	return uh.render.RenderPage(w, r, http.StatusOK, "user-signup.html", nil)
+	id, captcha, err := utils.GenerateCaptcha()
+	if err != nil {
+		return err
+	}
+	data := UserSignupRequest{
+		CaptchaID:      id,
+		CaptchaContent: template.URL(captcha),
+	}
+	return uh.render.RenderPage(w, r, http.StatusOK, "user-signup.html", data)
 }
 
 func (uh *userHandler) Signup(w http.ResponseWriter, r *http.Request) error {
@@ -209,8 +218,25 @@ func (uh *userHandler) Signup(w http.ResponseWriter, r *http.Request) error {
 	}
 	email := r.PostFormValue("email")
 	password := r.PostFormValue("password")
+	captchaID := r.PostFormValue("captchaID")
+	answer := r.PostFormValue("answer")
 
-	data := newUserRequest(email, password)
+	validCaptcha := utils.ValidateCaptcha(captchaID, answer)
+
+	data := UserSignupRequest{
+		Email:         email,
+		Password:      password,
+		CaptchaID:     captchaID,
+		CaptchaAnswer: answer,
+	}
+
+	if !validCaptcha {
+		data.AddFieldError("answer", "A resposta do captcha está incorreta")
+	}
+
+	if strings.TrimSpace(data.CaptchaAnswer) == "" {
+		data.AddFieldError("answer", "A resposta do captcha é obrigatória")
+	}
 
 	if strings.TrimSpace(data.Password) == "" {
 		data.AddFieldError("password", "Senha é obrigatória")
@@ -225,6 +251,12 @@ func (uh *userHandler) Signup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if !data.Valid() {
+		captchaID, captcha, err := utils.GenerateCaptcha()
+		if err != nil {
+			return err
+		}
+		data.CaptchaID = captchaID
+		data.CaptchaContent = template.URL(captcha)
 		return uh.render.RenderPage(w, r, http.StatusUnprocessableEntity, "user-signup.html", data)
 	}
 
@@ -237,7 +269,13 @@ func (uh *userHandler) Signup(w http.ResponseWriter, r *http.Request) error {
 	_, token, err := uh.repo.Create(r.Context(), data.Email, hash, hashToken)
 	if err == repositories.ErrDuplicateEmail {
 		data.AddFieldError("email", "Email já está em uso")
-		return uh.render.RenderPage(w, r, http.StatusUnprocessableEntity, "user-signup.html", token)
+		captchaID, captchaContent, err2 := utils.GenerateCaptcha()
+		if err2 != nil {
+			return err2
+		}
+		data.CaptchaID = captchaID
+		data.CaptchaContent = template.URL(captchaContent)
+		return uh.render.RenderPage(w, r, http.StatusUnprocessableEntity, "user-signup.html", data)
 	}
 
 	if err != nil {
